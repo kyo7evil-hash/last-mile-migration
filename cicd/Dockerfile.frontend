@@ -1,0 +1,11 @@
+# Frontend image: the same page as the claude.ai artifact (lastmile-checklist.html), wrapped in a
+# full HTML document with claude-shim.js loaded first so its window.claude calls talk to
+# this app's /api instead. Served by nginx on port 80; /api is routed to the backend by
+# the ingress and never reaches nginx.
+FROM nginx:1.27-alpine
+COPY cicd/nginx.conf /etc/nginx/conf.d/default.conf
+COPY frontend/claude-shim.js /usr/share/nginx/html/claude-shim.js
+COPY lastmile-checklist.html /tmp/page.html
+RUN { printf '%s\n' '<!doctype html>' '<html lang="en">' '<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><script src="/claude-shim.js"></script></head>' '<body>'; \
+      cat /tmp/page.html; printf '%s\n' '</body>' '</html>'; } > /usr/share/nginx/html/index.html && rm /tmp/page.html
+EXPOSE 80

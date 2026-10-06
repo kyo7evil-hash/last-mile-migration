@@ -1,0 +1,23 @@
+# Data files — contain employee emails; never commit
+*.xlsx
+*.xls
+*.csv
+index.html
+
+# OS / build
+.DS_Store
+__pycache__/
+.venv/
+node_modules/
+dist/
+.env
+
+# Substrait CLI link state
+.substrait/
+
+# Office lock files
+.~lock.*#
+~$*
+
+# Local Claude Code / test settings
+.claude/

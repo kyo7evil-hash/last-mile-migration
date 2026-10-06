@@ -1,0 +1,514 @@
+<title>Last Mile Migration Checklist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* Layout: one column, header + two tabs (Summary, Checklist); checklist is a table that becomes cards on phones. */
+:root {
+  --bg: #f4f6f9; --surface: #ffffff; --ink: #14171c; --ink-2: #5a6270; --line: #dfe3ea;
+  --accent: #c41e3a; --accent-ink: #ffffff;
+  --done: #1d7f47; --done-bg: #d9f1e2; --pend: #6d7482; --pend-bg: #eceff3; --na: #8a909c; --na-bg: #f6f7f9;
+  --warn: #a35a00; --focus: #2a6fd6; --shadow: 0 1px 2px rgba(20,23,28,.06), 0 4px 16px rgba(20,23,28,.06);
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #101318; --surface: #191d24; --ink: #e8eaee; --ink-2: #9ca3af; --line: #2b313b;
+  --accent: #ff5d72; --accent-ink: #1a0508;
+  --done: #5fd08f; --done-bg: #173726; --pend: #a3a9b5; --pend-bg: #252a33; --na: #7d8493; --na-bg: #1d2129;
+  --warn: #f0a24a; --focus: #6ea2ff; --shadow: 0 1px 2px rgba(0,0,0,.4); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #101318; --surface: #191d24; --ink: #e8eaee; --ink-2: #9ca3af; --line: #2b313b;
+  --accent: #ff5d72; --accent-ink: #1a0508;
+  --done: #5fd08f; --done-bg: #173726; --pend: #a3a9b5; --pend-bg: #252a33; --na: #7d8493; --na-bg: #1d2129;
+  --warn: #f0a24a; --focus: #6ea2ff; --shadow: 0 1px 2px rgba(0,0,0,.4); color-scheme: dark }
+
+* { box-sizing: border-box }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--f-body) }
+.wrap { max-width: 1280px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 48px }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0 }
+h1 { font-size: 24px; font-weight: 800; letter-spacing: -.01em }
+h2 { font-size: 16px; font-weight: 700 }
+.mono { font-family: var(--f-mono); font-size: 12.5px }
+.muted { color: var(--ink-2) }
+button, input, select, textarea { font: inherit; color: inherit }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px }
+
+header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 16px }
+.eyebrow { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600 }
+.who { font-size: 12.5px; color: var(--ink-2); text-align: right }
+
+nav.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 20px }
+nav.tabs button { background: none; border: 0; padding: 10px 14px; cursor: pointer; color: var(--ink-2); font-weight: 600; border-bottom: 2px solid transparent; margin-bottom: -1px }
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent) }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px }
+.grid2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px }
+@media (max-width: 820px) { .grid2 { grid-template-columns: minmax(0,1fr) } }
+
+/* headline */
+.hero { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 24px; align-items: center; margin-bottom: 16px }
+.big { font-family: var(--f-display); font-weight: 800; font-size: 56px; line-height: 1; font-variant-numeric: tabular-nums }
+.big small { font-size: 22px; color: var(--ink-2); font-weight: 700 }
+@media (max-width: 560px) { .hero { grid-template-columns: minmax(0,1fr) } .big { font-size: 44px } }
+.bar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: var(--pend-bg) }
+.bar > span { display: block; height: 100% }
+.bar .d { background: var(--done) }
+.bar .n { background: repeating-linear-gradient(135deg, var(--na) 0 2px, transparent 2px 6px); opacity: .7 }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; font-size: 12.5px; color: var(--ink-2) }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px }
+
+.rows { display: grid; gap: 4px }
+.row-btn { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 4px 12px; align-items: center; width: 100%; text-align: left; background: none; border: 0; padding: 8px; border-radius: 8px; cursor: pointer }
+.row-btn:hover { background: var(--na-bg) }
+.row-btn .bar { grid-column: 1 / -1; height: 8px }
+.row-btn .lbl { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.row-btn .num { font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 12.5px }
+.hint { font-size: 12px; color: var(--ink-2); margin: 4px 0 10px }
+
+/* toolbar */
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px }
+.toolbar input[type=search] { flex: 1 1 220px; min-width: 0 }
+.field, .toolbar select, .toolbar input[type=search] { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface) }
+.seg button { border: 0; background: none; padding: 8px 12px; cursor: pointer; color: var(--ink-2) }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface) }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 600 }
+.btn:hover { border-color: var(--ink-2) }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink) }
+.spacer { flex: 1 }
+.count { font-size: 12.5px; color: var(--ink-2); margin-bottom: 8px }
+.chipfilter { display: inline-flex; align-items: center; gap: 6px; background: var(--pend-bg); border-radius: 999px; padding: 4px 6px 4px 12px; font-size: 12.5px }
+.chipfilter button { border: 0; background: none; cursor: pointer; padding: 0 6px; font-size: 14px; color: var(--ink-2) }
+
+/* table */
+.tablewrap { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow-x: auto }
+table { border-collapse: collapse; width: 100%; min-width: 980px }
+th, td { padding: 10px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top }
+th { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); font-weight: 600; background: var(--na-bg); position: sticky; top: 0 }
+th.step, td.step { text-align: center; width: 92px }
+tbody tr { cursor: pointer }
+tbody tr:hover td { background: var(--na-bg) }
+tr.complete td:first-child { box-shadow: inset 3px 0 0 var(--done) }
+.sub { font-size: 12px; color: var(--ink-2); overflow-wrap: anywhere }
+.cell-rem { max-width: 220px; font-size: 12.5px; color: var(--ink-2); white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden }
+
+.chip { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 76px; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid transparent; white-space: nowrap }
+.chip[data-s="done"] { background: var(--done-bg); color: var(--done) }
+.chip[data-s="pending"] { background: var(--pend-bg); color: var(--pend) }
+.chip[data-s="na"] { background: transparent; color: var(--na); border: 1px dashed var(--na) }
+.chip:disabled { cursor: default }
+.chip .lab { display: none }
+
+@media (max-width: 760px) {
+  table { min-width: 0 }
+  thead { display: none }
+  table, tbody, tr, td { display: block }
+  tbody tr { padding: 12px; border-bottom: 1px solid var(--line) }
+  td { border: 0; padding: 2px 0 }
+  td.step { display: inline-block; width: auto; padding: 4px 4px 0 0 }
+  .chip .lab { display: inline }
+  .cell-rem { max-width: none }
+  tr.complete td:first-child { box-shadow: none }
+  tr.complete { box-shadow: inset 3px 0 0 var(--done) }
+}
+
+.empty { text-align: center; padding: 48px 16px; color: var(--ink-2) }
+.empty h2 { color: var(--ink); margin-bottom: 6px }
+
+/* drawer */
+dialog { border: 0; padding: 0; background: var(--surface); color: var(--ink); width: min(560px, 100%); max-width: 100%; height: 100%; max-height: 100%; margin: 0 0 0 auto; box-shadow: var(--shadow) }
+dialog::backdrop { background: rgba(10,12,16,.45) }
+.dlg { display: flex; flex-direction: column; height: 100% }
+.dlg-head { padding: 18px 20px 12px; border-bottom: 1px solid var(--line); display: flex; gap: 12px; align-items: start; justify-content: space-between }
+.dlg-body { padding: 16px 20px; overflow-y: auto; display: grid; gap: 18px; flex: 1 }
+.dlg-foot { padding: 12px 20px; border-top: 1px solid var(--line); display: flex; gap: 8px; align-items: center }
+dl.kv { display: grid; grid-template-columns: 140px minmax(0,1fr); gap: 6px 12px; margin: 0; font-size: 13px }
+dl.kv dt { color: var(--ink-2) }
+dl.kv dd { margin: 0; overflow-wrap: anywhere; white-space: pre-line }
+.steps { display: grid; gap: 6px }
+.steps .srow { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line) }
+.form { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px }
+.form label { display: grid; gap: 4px; font-size: 12px; color: var(--ink-2); font-weight: 600 }
+.form .full { grid-column: 1 / -1 }
+.form input, .form textarea { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-weight: 400; color: var(--ink) }
+.form textarea { min-height: 84px; resize: vertical }
+@media (max-width: 480px) { .form { grid-template-columns: minmax(0,1fr) } dl.kv { grid-template-columns: minmax(0,1fr) } dl.kv dt { margin-top: 4px } }
+.x { border: 0; background: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--ink-2); padding: 4px 8px }
+
+#toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--surface); padding: 10px 16px; border-radius: 8px; font-size: 13px; z-index: 50; max-width: calc(100% - 32px) }
+@media (prefers-reduced-motion: no-preference) { .bar > span { transition: width .4s ease } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Windows 11 · Last Mile laptops</div>
+      <h1>Last Mile Migration Checklist</h1>
+    </div>
+    <div class="who" id="who">Connecting…</div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-summary" aria-selected="true" data-tab="summary">Summary</button>
+    <button role="tab" id="tab-list" aria-selected="false" data-tab="list">Checklist</button>
+  </nav>
+
+  <section id="view-summary"></section>
+
+  <section id="view-list" hidden>
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Search tag, serial, user, hub, ticket…" aria-label="Search">
+      <select id="f-region" aria-label="Region"></select>
+      <select id="f-hub" aria-label="Hub"></select>
+      <div class="seg" role="group" aria-label="Show">
+        <button data-show="open" aria-pressed="true">Not complete</button>
+        <button data-show="done" aria-pressed="false">Complete</button>
+        <button data-show="all" aria-pressed="false">All</button>
+      </div>
+      <span class="spacer"></span>
+      <button class="btn" id="btn-export">Download Excel</button>
+      <button class="btn" id="btn-upload" hidden>Upload workbook</button>
+      <input type="file" id="file" accept=".xlsx,.xls" hidden>
+    </div>
+    <div id="active-filters" class="toolbar" hidden></div>
+    <div class="count" id="count"></div>
+    <div id="list"></div>
+  </section>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlg-title"></dialog>
+<div id="toast" role="status" hidden></div>
+
+<script>
+"use strict";
+const STEPS = [
+  { key: "ret",     label: "Return to IT",       short: "Return to IT" },
+  { key: "doneRet", label: "Done return",        short: "Returned" },
+  { key: "repl",    label: "Replacement to hub", short: "Replacement" },
+  { key: "win11",   label: "Win 11 updated",     short: "Win 11" },
+  { key: "snipe",   label: "Snipe-IT updated",   short: "Snipe-IT" },
+];
+const STATE_LABEL = { pending: "Pending", done: "Done", na: "N/A" };
+const NEXT = { pending: "done", done: "na", na: "pending" };
+const EDIT_FIELDS = ["latestUser", "remarks", "newSerial", "newTag", "ticket", "tn"];
+
+let DB = null, USER = null, DL = null, CAN_WRITE = false, IS_ADMIN = false, ME = null;
+let BASE = { meta: null, rows: [] }, EDITS = {}, LAPTOPS = [];
+const F = { q: "", region: "", hub: "", show: "open", step: "" };
+let openTag = null;
+
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtTime = iso => { if (!iso) return ""; const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleString(undefined, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }); };
+const short = e => (e || "").replace(/@.*$/, "");
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2600); }
+
+// ---------- merge base + edits ----------
+function merge() {
+  LAPTOPS = BASE.rows.map(b => {
+    const e = EDITS[b.tag] || {};
+    const l = { ...b, steps: { ...b.steps, ...(e.steps || {}) }, by: e.by, at: e.at };
+    for (const k of EDIT_FIELDS) if (k in e) l[k] = e[k];
+    l.complete = STEPS.every(s => l.steps[s.key] !== "pending");
+    l.started = STEPS.some(s => l.steps[s.key] === "done");
+    return l;
+  });
+}
+const isComplete = l => l.complete;
+
+// ---------- summary ----------
+function barHTML(done, na, total) {
+  const p = n => total ? (n / total * 100).toFixed(2) + "%" : "0%";
+  return `<div class="bar" role="img" aria-label="${done} done, ${na} not needed, ${total - done - na} pending"><span class="d" style="width:${p(done)}"></span><span class="n" style="width:${p(na)}"></span></div>`;
+}
+function renderSummary() {
+  const v = $("#view-summary");
+  if (!LAPTOPS.length) { v.innerHTML = emptyHTML(); bindEmpty(v); return; }
+  const n = LAPTOPS.length, c = LAPTOPS.filter(isComplete).length;
+  const started = LAPTOPS.filter(l => !l.complete && l.started).length;
+  const pct = Math.round(c / n * 100);
+  const stepRows = STEPS.map(s => {
+    const d = LAPTOPS.filter(l => l.steps[s.key] === "done").length;
+    const na = LAPTOPS.filter(l => l.steps[s.key] === "na").length;
+    return `<button class="row-btn" data-step="${s.key}"><span class="lbl">${s.label}</span><span class="num">${d} done${na ? ` · ${na} N/A` : ""} · <b>${n - d - na} pending</b></span>${barHTML(d, na, n)}</button>`;
+  }).join("");
+  const regions = groupBy(LAPTOPS, l => l.region);
+  const regRows = [...regions].sort((a, b) => (a[1].filter(isComplete).length / a[1].length) - (b[1].filter(isComplete).length / b[1].length) || a[0].localeCompare(b[0]))
+    .map(([r, ls]) => { const k = ls.filter(isComplete).length; return `<button class="row-btn" data-region="${esc(r)}"><span class="lbl">${esc(r)}</span><span class="num">${k} / ${ls.length} complete</span>${barHTML(k, 0, ls.length)}</button>`; }).join("");
+  v.innerHTML = `
+    <div class="panel hero">
+      <div class="big">${c}<small> / ${n}</small></div>
+      <div>
+        <h2>laptops complete (${pct}%)</h2>
+        <div class="hint">A laptop is complete when all 5 steps are Done or N/A. ${started} more are in progress, ${n - c - started} not started.</div>
+        ${barHTML(c, 0, n)}
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h2>Progress by step</h2><p class="hint">Click a step to see the laptops still waiting on it.</p>
+        <div class="rows">${stepRows}</div>
+        <div class="legend"><span><i style="background:var(--done)"></i>Done</span><span><i style="background:repeating-linear-gradient(135deg,var(--na) 0 2px,transparent 2px 5px)"></i>Not needed</span><span><i style="background:var(--pend-bg);border:1px solid var(--line)"></i>Pending</span></div>
+      </div>
+      <div class="panel"><h2>Progress by region</h2><p class="hint">Least finished first. Click a region to open its laptops.</p>
+        <div class="rows">${regRows}</div>
+      </div>
+    </div>
+    ${BASE.meta ? `<p class="hint" style="margin-top:16px">Data loaded from ${esc(BASE.meta.file || "workbook")} on ${esc(fmtTime(BASE.meta.at))}${BASE.meta.by ? " by " + esc(short(BASE.meta.by)) : ""}.</p>` : ""}`;
+  v.querySelectorAll("[data-step]").forEach(b => b.onclick = () => { Object.assign(F, { step: b.dataset.step, region: "", hub: "", q: "", show: "all" }); go("list"); });
+  v.querySelectorAll("[data-region]").forEach(b => b.onclick = () => { Object.assign(F, { region: b.dataset.region, step: "", hub: "", q: "", show: "all" }); go("list"); });
+}
+function groupBy(arr, fn) { const m = new Map(); for (const x of arr) { const k = fn(x); if (!m.has(k)) m.set(k, []); m.get(k).push(x); } return m; }
+
+function emptyHTML() {
+  return `<div class="panel empty"><h2>No laptops loaded yet</h2>
+    <p>${IS_ADMIN ? "Upload the Last Mile workbook (.xlsx) to fill the checklist. You only need to do this once." : "An admin needs to upload the Last Mile workbook first. Check back soon."}</p>
+    ${IS_ADMIN ? '<button class="btn primary" data-upload>Upload workbook</button>' : ""}</div>`;
+}
+function bindEmpty(root) { root.querySelectorAll("[data-upload]").forEach(b => b.onclick = () => $("#file").click()); }
+
+// ---------- checklist ----------
+function filtered() {
+  const q = F.q.trim().toLowerCase();
+  return LAPTOPS.filter(l => {
+    if (F.region && l.region !== F.region) return false;
+    if (F.hub && l.hub !== F.hub) return false;
+    if (F.step && l.steps[F.step] !== "pending") return false;
+    if (F.show === "open" && l.complete) return false;
+    if (F.show === "done" && !l.complete) return false;
+    if (q) {
+      const hay = [l.tag, l.serial, l.assigned, l.latestUser, l.lastSync, l.hub, l.region, l.brand, l.model, l.remarks, l.ticket, l.newSerial, l.newTag, l.tn].join(" ").toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+function chip(l, s) {
+  const st = l.steps[s.key];
+  return `<button class="chip" data-tag="${esc(l.tag)}" data-k="${s.key}" data-s="${st}" ${CAN_WRITE ? "" : "disabled"} title="${esc(s.label)}: ${STATE_LABEL[st]}${CAN_WRITE ? " (click to change)" : ""}" aria-label="${esc(s.label)}: ${STATE_LABEL[st]}"><span class="lab">${esc(s.short)}:</span> ${STATE_LABEL[st]}</button>`;
+}
+function fillSelect(sel, values, cur, allLabel) {
+  sel.innerHTML = `<option value="">${allLabel}</option>` + values.map(v => `<option${v === cur ? " selected" : ""}>${esc(v)}</option>`).join("");
+}
+function renderList() {
+  const regions = [...new Set(LAPTOPS.map(l => l.region))].sort();
+  const hubs = [...new Set(LAPTOPS.filter(l => !F.region || l.region === F.region).map(l => l.hub))].sort();
+  if (F.hub && !hubs.includes(F.hub)) F.hub = "";
+  fillSelect($("#f-region"), regions, F.region, "All regions");
+  fillSelect($("#f-hub"), hubs, F.hub, "All hubs");
+  if ($("#q").value !== F.q) $("#q").value = F.q;
+  document.querySelectorAll("[data-show]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.show === F.show)));
+  $("#btn-upload").hidden = !IS_ADMIN;
+
+  const af = $("#active-filters");
+  const stepName = F.step && STEPS.find(s => s.key === F.step).label;
+  af.hidden = !F.step;
+  af.innerHTML = F.step ? `<span class="chipfilter">Waiting on: <b>${esc(stepName)}</b><button aria-label="Clear step filter" id="clear-step">×</button></span>` : "";
+  if (F.step) $("#clear-step").onclick = () => { F.step = ""; renderList(); };
+
+  const list = $("#list");
+  if (!LAPTOPS.length) { $("#count").textContent = ""; list.innerHTML = emptyHTML(); bindEmpty(list); return; }
+  const rows = filtered();
+  $("#count").textContent = `Showing ${rows.length} of ${LAPTOPS.length} laptops`;
+  if (!rows.length) { list.innerHTML = `<div class="panel empty"><h2>No laptops match</h2><p>Try "All" or clear the search and filters.</p></div>`; return; }
+  list.innerHTML = `<div class="tablewrap"><table>
+    <thead><tr><th>Tag / Serial</th><th>Region · Hub</th><th>User</th><th>Laptop</th>${STEPS.map(s => `<th class="step">${esc(s.short)}</th>`).join("")}<th>Remarks</th><th>Last change</th></tr></thead>
+    <tbody>${rows.map(l => `<tr data-open="${esc(l.tag)}" class="${l.complete ? "complete" : ""}">
+      <td><div class="mono"><b>${esc(l.tag)}</b></div><div class="sub mono">${esc(l.serial)}</div></td>
+      <td>${esc(l.region)}<div class="sub">${esc(l.hub)}</div></td>
+      <td><div style="overflow-wrap:anywhere">${esc(short(l.assigned)) || "—"}</div>${l.latestUser ? `<div class="sub">Latest: ${esc(short(l.latestUser))}</div>` : ""}</td>
+      <td>${esc(l.brand) || "—"}<div class="sub">${esc(l.model)}</div></td>
+      ${STEPS.map(s => `<td class="step">${chip(l, s)}</td>`).join("")}
+      <td><div class="cell-rem">${esc([l.ticket, l.remarks].filter(Boolean).join(" · "))}</div></td>
+      <td class="sub">${l.at ? `${esc(short(l.by))}<br>${esc(fmtTime(l.at))}` : ""}</td>
+    </tr>`).join("")}</tbody></table></div>`;
+}
+
+// ---------- detail drawer ----------
+function openDetail(tag) {
+  const l = LAPTOPS.find(x => x.tag === tag); if (!l) return;
+  openTag = tag;
+  const dis = CAN_WRITE ? "" : "disabled";
+  const inp = (k, label, cls = "") => `<label class="${cls}">${label}<input id="ed-${k}" value="${esc(l[k])}" ${dis}></label>`;
+  $("#dlg").innerHTML = `<form class="dlg" id="dlg-form" method="dialog">
+    <div class="dlg-head"><div><div class="eyebrow">${esc(l.region)} · ${esc(l.hub)}</div><h2 id="dlg-title" class="mono" style="font-size:18px">${esc(l.tag)}</h2><div class="sub" id="dlg-last">${lastLine(l)}</div></div><button type="button" class="x" id="dlg-x" aria-label="Close">×</button></div>
+    <div class="dlg-body">
+      <div><h3 style="font-size:14px;margin-bottom:6px">Checklist</h3><div class="steps" id="dlg-steps">${stepsHTML(l)}</div></div>
+      <div><h3 style="font-size:14px;margin-bottom:8px">Laptop</h3><dl class="kv">
+        <dt>Serial number</dt><dd class="mono">${esc(l.serial) || "—"}</dd>
+        <dt>Brand / model</dt><dd>${esc([l.brand, l.model].filter(Boolean).join(" · ")) || "—"}</dd>
+        <dt>Assigned (Snipe-IT)</dt><dd>${esc(l.assigned) || "—"}</dd>
+        <dt>Snipe-IT status</dt><dd>${esc(l.snipeStatus) || "—"}</dd>
+        <dt>Last sync user</dt><dd>${esc(l.lastSync) || "—"}</dd>
+        <dt>Position</dt><dd>${esc(l.position) || "—"}</dd>
+      </dl></div>
+      <div class="form">
+        ${inp("latestUser", "Latest user", "full")}
+        <label class="full">Remarks<textarea id="ed-remarks" ${dis}>${esc(l.remarks)}</textarea></label>
+      </div>
+      <div><h3 style="font-size:14px;margin-bottom:8px">Replacement laptop</h3><div class="form">
+        ${inp("newSerial", "New serial no.")}${inp("newTag", "New tag no.")}${inp("ticket", "ISD ticket")}${inp("tn", "TN (tracking no.)")}
+      </div></div>
+    </div>
+    <div class="dlg-foot">${CAN_WRITE ? '<button class="btn primary" id="dlg-save" type="submit" value="save">Save changes</button>' : '<span class="muted">View only</span>'}<button class="btn" type="button" id="dlg-cancel">Close</button></div>
+  </form>`;
+  const d = $("#dlg");
+  d.showModal();
+  $("#dlg-x").onclick = $("#dlg-cancel").onclick = () => d.close();
+  $("#dlg-form").onsubmit = async ev => {
+    ev.preventDefault();
+    const changes = {};
+    for (const k of EDIT_FIELDS) { const v = $("#ed-" + k).value.trim(); if (v !== (l[k] ?? "")) changes[k] = v; }
+    if (!Object.keys(changes).length) { d.close(); return; }
+    if (await saveEdit(tag, changes)) { toast("Saved " + tag); d.close(); }
+  };
+}
+function lastLine(l) { return l.at ? `Last change by ${esc(short(l.by))}, ${esc(fmtTime(l.at))}` : "No changes on the web yet"; }
+function stepsHTML(l) { return STEPS.map(s => `<div class="srow"><span>${esc(s.label)}</span>${chip(l, s)}</div>`).join(""); }
+$("#dlg").addEventListener("close", () => { openTag = null; });
+$("#dlg").addEventListener("click", e => { if (e.target.id === "dlg") e.target.close(); });
+function refreshDetail() {
+  if (!openTag) return;
+  const l = LAPTOPS.find(x => x.tag === openTag); if (!l) return;
+  $("#dlg-steps").innerHTML = stepsHTML(l);
+  $("#dlg-last").innerHTML = lastLine(l);
+}
+
+// ---------- saving ----------
+async function saveEdit(tag, changes) {
+  if (!DB || !CAN_WRITE) { toast("Sign in to save changes."); return false; }
+  const prev = EDITS[tag] || {};
+  const next = { ...prev, ...changes, steps: { ...(prev.steps || {}), ...(changes.steps || {}) } };
+  delete next.by; delete next.at;
+  EDITS[tag] = { ...next, by: ME, at: new Date().toISOString() };  // optimistic
+  rerender();
+  try { await DB.collection("edits").doc(tag).set(next); return true; }
+  catch (e) { EDITS[tag] = prev; rerender(); toast("Couldn't save. Check your connection and try again."); return false; }
+}
+document.addEventListener("click", e => {
+  const c = e.target.closest(".chip[data-k]");
+  if (c) {
+    e.stopPropagation(); e.preventDefault();
+    if (c.disabled) return;
+    const l = LAPTOPS.find(x => x.tag === c.dataset.tag);
+    saveEdit(l.tag, { steps: { [c.dataset.k]: NEXT[l.steps[c.dataset.k]] } });
+    return;
+  }
+  const r = e.target.closest("tr[data-open]");
+  if (r) openDetail(r.dataset.open);
+});
+
+// ---------- workbook upload ----------
+const clean = v => String(v ?? "").replace(/\r/g, "").trim();
+const flag = v => /^(1|true|yes|y|done)$/i.test(clean(v)) ? "done" : "pending";  // Excel checkboxes come through as TRUE/FALSE
+const normRow = r => Object.fromEntries(Object.entries(r).map(([k, v]) => [k.trim().toLowerCase(), clean(v)]));
+const brandName = b => clean(b).replace(/^MY\s*-?\s*/i, "").trim();
+function parseWorkbook(wb) {
+  const sheets = wb.SheetNames.map(n => XLSX.utils.sheet_to_json(wb.Sheets[n], { defval: "", raw: false }).map(normRow));
+  const main = sheets.find(r => r.length && "tagging" in r[0] && "win 11 update" in r[0]);
+  if (!main) throw new Error("Couldn't find the laptop sheet. It needs the columns Tagging and Win 11 update.");
+  const lm = sheets.find(r => r.length && "done return" in r[0]) || [];
+  const lmByTag = new Map(lm.filter(r => r.tagging).map(r => [r.tagging, r]));
+  const seen = new Set(), rows = [];
+  for (const r of main) {
+    const tag = r.tagging.replace(/\s+/g, "");
+    if (!tag || seen.has(tag) || !/^[A-Za-z0-9_\-.~:@+]{1,150}$/.test(tag)) continue;
+    seen.add(tag);
+    const x = lmByTag.get(tag) || {};
+    rows.push({
+      tag, region: r.region || x.region || "No region", hub: r.hub || x.hub || x.station || "No hub",
+      assigned: r["user assign from snipe it"], serial: r.serialnumber, snipeStatus: r["snipe it status"],
+      brand: brandName(r["laptop brand"] || x["laptop brand"]), model: r["laptop model"], lastSync: r["last sync user"],
+      dept: r.department, position: r.position || x.position, latestUser: r["latest user"], remarks: r.remarks,
+      newSerial: x["serial no."] || "", newTag: x["tagging no."] || "", ticket: x.ticket || "", tn: x.tn || "",
+      steps: {
+        ret: flag(r["return to it"]),
+        doneRet: flag(x["done return"]),
+        repl: /no need replacement/i.test(r.remarks) ? "na" : flag(r["replacement to hub"]),
+        win11: flag(r["win 11 update"]),
+        snipe: "pending",
+      },
+    });
+  }
+  return rows;
+}
+async function uploadFile(file) {
+  if (!IS_ADMIN || !DB) { toast("Only admins can upload the workbook."); return; }
+  try {
+    const rows = parseWorkbook(XLSX.read(await file.arrayBuffer(), { type: "array" }));
+    if (!rows.length) throw new Error("No laptops with a tag were found in the workbook.");
+    const CH = 150, chunks = Math.ceil(rows.length / CH);
+    const base = DB.collection("base");
+    for (let i = 0; i < chunks; i++) await base.doc("p" + i).set({ rows: rows.slice(i * CH, (i + 1) * CH) });
+    const oldChunks = BASE.meta?.chunks || 0;
+    for (let i = chunks; i < oldChunks; i++) await base.doc("p" + i).delete();
+    await base.doc("meta").set({ chunks, count: rows.length, file: file.name, by: ME, at: new Date().toISOString() });
+    toast(`Loaded ${rows.length} laptops from ${file.name}`);
+  } catch (e) { toast(e.message || "Couldn't read that file."); }
+}
+$("#file").onchange = e => { const f = e.target.files[0]; e.target.value = ""; if (f) uploadFile(f); };
+$("#btn-upload").onclick = () => $("#file").click();
+
+// ---------- export ----------
+$("#btn-export").onclick = async () => {
+  const rows = (LAPTOPS.length ? filtered() : []).map(l => ({
+    "Tagging": l.tag, "Region": l.region, "Hub": l.hub, "User assign from snipe it": l.assigned, "Serialnumber": l.serial,
+    "Laptop brand": l.brand, "Laptop model": l.model, "Last sync user": l.lastSync, "Position": l.position, "Latest User": l.latestUser,
+    ...Object.fromEntries(STEPS.map(s => [s.label, STATE_LABEL[l.steps[s.key]]])),
+    "Complete": l.complete ? "Yes" : "No", "Remarks": l.remarks, "New serial": l.newSerial, "New tag": l.newTag, "ISD ticket": l.ticket, "TN": l.tn,
+    "Last change by": l.by || "", "Last change at": l.at ? fmtTime(l.at) : "",
+  }));
+  if (!rows.length) { toast("Nothing to download in this view."); return; }
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "Checklist");
+  const name = `last-mile-checklist-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const blob = new Blob([XLSX.write(wb, { type: "array", bookType: "xlsx" })], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  if (DL) await DL.save({ filename: name, data: blob }); else toast("Download isn't available here.");
+};
+
+// ---------- tabs & filters ----------
+function go(tab) {
+  document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
+  $("#view-summary").hidden = tab !== "summary";
+  $("#view-list").hidden = tab !== "list";
+  try { localStorage.setItem("lm-tab", tab); } catch (e) {}
+  rerender();
+}
+document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => go(b.dataset.tab));
+$("#q").oninput = e => { F.q = e.target.value; renderList(); };
+$("#f-region").onchange = e => { F.region = e.target.value; F.hub = ""; renderList(); };
+$("#f-hub").onchange = e => { F.hub = e.target.value; renderList(); };
+document.querySelectorAll("[data-show]").forEach(b => b.onclick = () => { F.show = b.dataset.show; renderList(); });
+
+function rerender() {
+  merge();
+  if (!$("#view-summary").hidden) renderSummary();
+  if (!$("#view-list").hidden) renderList();
+  refreshDetail();
+}
+
+// ---------- boot ----------
+(async function boot() {
+  try { const t = localStorage.getItem("lm-tab"); if (t === "list") go("list"); } catch (e) {}
+  if (!window.claude?.use) { $("#who").textContent = "Offline copy: open the app link to load data"; rerender(); return; }
+  [DB, USER, DL] = await Promise.all(["db", "user", "downloads"].map(n => window.claude.use(n).catch(() => null)));
+  ME = await USER?.id?.().catch(() => null) ?? null;
+  CAN_WRITE = !!DB && !!(await USER?.can?.("data.write").catch(() => false));
+  IS_ADMIN = !!(await USER?.canEdit?.().catch(() => false));
+  $("#who").innerHTML = ME ? `Signed in as <b>${esc(ME)}</b>${IS_ADMIN ? " · admin" : ""}${CAN_WRITE ? "" : " · view only"}` : (DB ? "Local mode" : "Not signed in");
+  rerender();
+  if (!DB) return;
+  DB.collection("base").onSnapshot(snap => {
+    const docs = Object.fromEntries(snap.docs.map(d => [d.id, d.data()]));
+    const meta = docs.meta || null, rows = [];
+    for (let i = 0; i < (meta?.chunks || 0); i++) rows.push(...(docs["p" + i]?.rows || []));
+    BASE = { meta, rows };
+    rerender();
+  });
+  DB.collection("edits").limit(1000).onSnapshot(snap => {
+    EDITS = Object.fromEntries(snap.docs.map(d => [d.id, d.data()]));
+    rerender();
+  });
+})();
+</script>
