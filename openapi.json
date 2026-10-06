@@ -1,0 +1,446 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Last Mile Migration Checklist",
+    "version": "1.0.0",
+    "description": "JSON document store behind the Last Mile Migration Checklist page: the laptop list loaded from the workbook (base, admin-only writes) and per-laptop checklist edits (edits, stamped with the signed-in user's email and time). All data routes require Google SSO."
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Readiness probe; returns ok when the service is up.",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Service is up",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me": {
+      "get": {
+        "summary": "Return the signed-in user's email and whether they are an admin and may edit.",
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "Current viewer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/docs/{coll}/version": {
+      "get": {
+        "summary": "Return the collection's revision number, which increases on every write (for cheap change polling).",
+        "operationId": "collectionVersion",
+        "parameters": [
+          {
+            "name": "coll",
+            "in": "path",
+            "required": true,
+            "description": "Collection: `base` (device list from the workbook; admin-only writes) or `edits` (per-laptop checklist changes).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "base",
+                "edits"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revision",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Version"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown collection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/docs/{coll}": {
+      "get": {
+        "summary": "List every document in a collection with the current revision.",
+        "operationId": "listDocs",
+        "parameters": [
+          {
+            "name": "coll",
+            "in": "path",
+            "required": true,
+            "description": "Collection: `base` (device list from the workbook; admin-only writes) or `edits` (per-laptop checklist changes).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "base",
+                "edits"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown collection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/docs/{coll}/{doc_id}": {
+      "put": {
+        "summary": "Create or replace one document; edits are stamped server-side with the editor's email (`by`) and time (`at`).",
+        "operationId": "putDoc",
+        "parameters": [
+          {
+            "name": "coll",
+            "in": "path",
+            "required": true,
+            "description": "Collection: `base` (device list from the workbook; admin-only writes) or `edits` (per-laptop checklist changes).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "base",
+                "edits"
+              ]
+            }
+          },
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "description": "Document id, e.g. an asset tag (`NV00012608`) or `meta` / `p0`\u2026`pN` in `base`.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_\\-.~:@+]{1,150}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Any JSON object up to 512 KB. For `edits` typical fields are `check`, `audit`, `remarks`, `trueUser`, `hostname`, `serial`, `email`, `removed`, `added`.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid id or body is not a JSON object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only admins can write the base device list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown collection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Document too large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete one document from a collection.",
+        "operationId": "deleteDoc",
+        "parameters": [
+          {
+            "name": "coll",
+            "in": "path",
+            "required": true,
+            "description": "Collection: `base` (device list from the workbook; admin-only writes) or `edits` (per-laptop checklist changes).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "base",
+                "edits"
+              ]
+            }
+          },
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "description": "Document id, e.g. an asset tag (`NV00012608`) or `meta` / `p0`\u2026`pN` in `base`.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_\\-.~:@+]{1,150}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted (idempotent)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid document id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only admins can write the base device list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown collection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          }
+        }
+      },
+      "Me": {
+        "type": "object",
+        "required": [
+          "email",
+          "admin",
+          "can_write",
+          "login_required"
+        ],
+        "properties": {
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Signed-in Google email, null when not signed in"
+          },
+          "admin": {
+            "type": "boolean",
+            "description": "May replace the device list (ADMIN_EMAILS)"
+          },
+          "can_write": {
+            "type": "boolean"
+          },
+          "login_required": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Version": {
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer"
+          }
+        }
+      },
+      "Doc": {
+        "type": "object",
+        "required": [
+          "id",
+          "data"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "DocList": {
+        "type": "object",
+        "required": [
+          "version",
+          "docs"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer"
+          },
+          "docs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Doc"
+            }
+          }
+        }
+      },
+      "Ok": {
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "detail": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
