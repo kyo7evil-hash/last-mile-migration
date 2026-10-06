@@ -87,37 +87,52 @@ nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: 
 .chipfilter { display: inline-flex; align-items: center; gap: 6px; background: var(--pend-bg); border-radius: 999px; padding: 4px 6px 4px 12px; font-size: 12.5px }
 .chipfilter button { border: 0; background: none; cursor: pointer; padding: 0 6px; font-size: 14px; color: var(--ink-2) }
 
-/* table */
-.tablewrap { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow-x: auto }
-table { border-collapse: collapse; width: 100%; min-width: 980px }
-th, td { padding: 10px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top }
-th { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); font-weight: 600; background: var(--na-bg); position: sticky; top: 0 }
-th.step, td.step { text-align: center; width: 92px }
-tbody tr { cursor: pointer }
-tbody tr:hover td { background: var(--na-bg) }
-tr.complete td:first-child { box-shadow: inset 3px 0 0 var(--done) }
+/* filter bar */
+.filterbar { display: grid; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 14px }
+.filterbar .toolbar { margin: 0 }
+.filterbar label.inline { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-2) }
+.listhead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px }
 .sub { font-size: 12px; color: var(--ink-2); overflow-wrap: anywhere }
-.cell-rem { max-width: 220px; font-size: 12.5px; color: var(--ink-2); white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden }
 
-.chip { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 76px; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid transparent; white-space: nowrap }
-.chip[data-s="done"] { background: var(--done-bg); color: var(--done) }
-.chip[data-s="pending"] { background: var(--pend-bg); color: var(--pend) }
-.chip[data-s="na"] { background: transparent; color: var(--na); border: 1px dashed var(--na) }
-.chip:disabled { cursor: default }
-.chip .lab { display: none }
+/* laptop cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: 14px; align-items: start }
+.card { display: grid; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 14px 12px; min-width: 0 }
+.card:hover { border-color: color-mix(in srgb, var(--ink-2) 55%, var(--line)) }
+.card.complete { border-color: color-mix(in srgb, var(--done) 45%, var(--line)) }
+.card-head { display: flex; justify-content: space-between; align-items: start; gap: 8px }
+.card-tag { font-family: var(--f-mono); font-weight: 500; font-size: 15px; letter-spacing: .01em }
+.card-loc { font-size: 12.5px; color: var(--ink-2) }
+.status { flex: none; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px }
+.status.s-done { background: var(--done-bg); color: var(--done) }
+.status.s-prog { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn) }
+.status.s-new { background: var(--pend-bg); color: var(--pend) }
+.card-meta { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 2px 10px; font-size: 12.5px; padding-bottom: 10px; border-bottom: 1px solid var(--line) }
+.card-meta dt { color: var(--ink-2) }
+.card-meta dd { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.card-meta dd.mono { font-size: 12px }
+.checks { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none }
+.card-foot { display: grid; gap: 8px; padding-top: 10px; border-top: 1px solid var(--line) }
+.card-prog { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums }
+.card-prog .bar { flex: 1; height: 6px }
+.card-note { font-size: 12.5px; color: var(--ink-2); white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden }
+.card-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-2) }
+.link-btn { border: 0; background: none; color: var(--focus); font-weight: 600; cursor: pointer; padding: 4px 0; font-size: 12.5px }
+.link-btn:hover { text-decoration: underline }
 
-@media (max-width: 760px) {
-  table { min-width: 0 }
-  thead { display: none }
-  table, tbody, tr, td { display: block }
-  tbody tr { padding: 12px; border-bottom: 1px solid var(--line) }
-  td { border: 0; padding: 2px 0 }
-  td.step { display: inline-block; width: auto; padding: 4px 4px 0 0 }
-  .chip .lab { display: inline }
-  .cell-rem { max-width: none }
-  tr.complete td:first-child { box-shadow: none }
-  tr.complete { box-shadow: inset 3px 0 0 var(--done) }
-}
+/* tick-box step rows (cards + detail panel) */
+.step-btn { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: 0; border-radius: 6px; padding: 5px 6px; cursor: pointer; font-size: 13.5px }
+.step-btn:hover:not(:disabled) { background: var(--na-bg) }
+.step-btn:disabled { cursor: default }
+.box { flex: none; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid color-mix(in srgb, var(--ink-2) 70%, transparent); background: var(--surface) }
+.box svg { width: 12px; height: 12px; fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round }
+.step-btn[data-s="done"] .box { background: var(--done); border-color: var(--done) }
+.step-btn[data-s="done"] .box svg { stroke: var(--surface) }
+.step-btn[data-s="na"] .box { border-style: dashed; border-color: var(--na) }
+.step-btn[data-s="na"] .box svg { stroke: var(--na) }
+.step-btn .lbl { flex: 1; min-width: 0 }
+.step-btn[data-s="na"] .lbl { color: var(--na); text-decoration: line-through }
+.step-btn .state { font-size: 11px; color: var(--ink-2) }
+.step-btn[data-s="done"] .state { color: var(--done); font-weight: 600 }
 
 .empty { text-align: center; padding: 48px 16px; color: var(--ink-2) }
 .empty h2 { color: var(--ink); margin-bottom: 6px }
@@ -133,7 +148,6 @@ dl.kv { display: grid; grid-template-columns: 140px minmax(0,1fr); gap: 6px 12px
 dl.kv dt { color: var(--ink-2) }
 dl.kv dd { margin: 0; overflow-wrap: anywhere; white-space: pre-line }
 .steps { display: grid; gap: 6px }
-.steps .srow { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line) }
 .form { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px }
 .form label { display: grid; gap: 4px; font-size: 12px; color: var(--ink-2); font-weight: 600 }
 .form .full { grid-column: 1 / -1 }
@@ -166,22 +180,36 @@ dl.kv dd { margin: 0; overflow-wrap: anywhere; white-space: pre-line }
   <section id="view-summary"></section>
 
   <section id="view-list" hidden>
-    <div class="toolbar">
-      <input type="search" id="q" placeholder="Search tag, serial, user, hub, ticket…" aria-label="Search">
-      <select id="f-region" aria-label="Region"></select>
-      <select id="f-hub" aria-label="Hub"></select>
-      <div class="seg" role="group" aria-label="Show">
-        <button data-show="open" aria-pressed="true">Not complete</button>
-        <button data-show="done" aria-pressed="false">Complete</button>
-        <button data-show="all" aria-pressed="false">All</button>
+    <div class="filterbar">
+      <div class="toolbar">
+        <input type="search" id="q" placeholder="Search tag, serial, user, hub, ticket…" aria-label="Search">
+        <select id="f-region" aria-label="Region"></select>
+        <select id="f-hub" aria-label="Hub"></select>
+        <label class="inline" for="f-sort">Sort by
+          <select id="f-sort">
+            <option value="region">Region, then hub</option>
+            <option value="hub">Hub</option>
+            <option value="least">Least done first</option>
+            <option value="most">Most done first</option>
+            <option value="tag">Tag number</option>
+            <option value="recent">Recently changed</option>
+          </select>
+        </label>
       </div>
-      <span class="spacer"></span>
-      <button class="btn" id="btn-export">Download Excel</button>
-      <button class="btn" id="btn-upload" hidden>Upload workbook</button>
-      <input type="file" id="file" accept=".xlsx,.xls" hidden>
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Show">
+          <button data-show="open" aria-pressed="true">Not complete</button>
+          <button data-show="done" aria-pressed="false">Complete</button>
+          <button data-show="all" aria-pressed="false">All</button>
+        </div>
+        <span id="active-filters" hidden></span>
+        <span class="spacer"></span>
+        <button class="btn" id="btn-export">Download Excel</button>
+        <button class="btn" id="btn-upload" hidden>Upload workbook</button>
+        <input type="file" id="file" accept=".xlsx,.xls" hidden>
+      </div>
     </div>
-    <div id="active-filters" class="toolbar" hidden></div>
-    <div class="count" id="count"></div>
+    <div class="listhead"><div class="count" id="count"></div></div>
     <div id="list"></div>
   </section>
 </div>
@@ -204,7 +232,7 @@ const EDIT_FIELDS = ["latestUser", "remarks", "newSerial", "newTag", "ticket", "
 
 let DB = null, USER = null, DL = null, CAN_WRITE = false, IS_ADMIN = false, ME = null;
 let BASE = { meta: null, rows: [] }, EDITS = {}, LAPTOPS = [];
-const F = { q: "", region: "", hub: "", show: "open", step: "" };
+const F = { q: "", region: "", hub: "", show: "open", step: "", sort: "region" };
 let openTag = null;
 
 const $ = s => document.querySelector(s);
@@ -221,6 +249,9 @@ function merge() {
     for (const k of EDIT_FIELDS) if (k in e) l[k] = e[k];
     l.complete = STEPS.every(s => l.steps[s.key] !== "pending");
     l.started = STEPS.some(s => l.steps[s.key] === "done");
+    l.need = STEPS.filter(s => l.steps[s.key] !== "na").length;      // steps that apply to this laptop
+    l.doneN = STEPS.filter(s => l.steps[s.key] === "done").length;
+    l.progress = l.need ? l.doneN / l.need : 1;
     return l;
   });
 }
@@ -277,6 +308,15 @@ function emptyHTML() {
 function bindEmpty(root) { root.querySelectorAll("[data-upload]").forEach(b => b.onclick = () => $("#file").click()); }
 
 // ---------- checklist ----------
+const byText = (a, b) => String(a).localeCompare(String(b), undefined, { numeric: true });
+const SORTS = {
+  region: (a, b) => byText(a.region, b.region) || byText(a.hub, b.hub) || byText(a.tag, b.tag),
+  hub:    (a, b) => byText(a.hub, b.hub) || byText(a.tag, b.tag),
+  least:  (a, b) => a.progress - b.progress || byText(a.region, b.region) || byText(a.tag, b.tag),
+  most:   (a, b) => b.progress - a.progress || byText(a.region, b.region) || byText(a.tag, b.tag),
+  tag:    (a, b) => byText(a.tag, b.tag),
+  recent: (a, b) => String(b.at || "").localeCompare(String(a.at || "")) || byText(a.tag, b.tag),
+};
 function filtered() {
   const q = F.q.trim().toLowerCase();
   return LAPTOPS.filter(l => {
@@ -290,21 +330,52 @@ function filtered() {
       if (!hay.includes(q)) return false;
     }
     return true;
-  });
+  }).sort(SORTS[F.sort] || SORTS.region);
 }
-function chip(l, s) {
+const TICK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>';
+const DASH = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8h8"/></svg>';
+function stepBtn(l, s) {
   const st = l.steps[s.key];
-  return `<button class="chip" data-tag="${esc(l.tag)}" data-k="${s.key}" data-s="${st}" ${CAN_WRITE ? "" : "disabled"} title="${esc(s.label)}: ${STATE_LABEL[st]}${CAN_WRITE ? " (click to change)" : ""}" aria-label="${esc(s.label)}: ${STATE_LABEL[st]}"><span class="lab">${esc(s.short)}:</span> ${STATE_LABEL[st]}</button>`;
+  return `<button type="button" class="step-btn" data-tag="${esc(l.tag)}" data-k="${s.key}" data-s="${st}" ${CAN_WRITE ? "" : "disabled"}
+    role="checkbox" aria-checked="${st === "done" ? "true" : st === "na" ? "mixed" : "false"}"
+    title="${CAN_WRITE ? "Click to change: Pending → Done → Not needed" : esc(STATE_LABEL[st])}">
+    <span class="box">${st === "done" ? TICK : st === "na" ? DASH : ""}</span>
+    <span class="lbl">${esc(s.label)}</span><span class="state">${st === "pending" ? "" : st === "na" ? "Not needed" : "Done"}</span></button>`;
+}
+function statusPill(l) {
+  return l.complete ? '<span class="status s-done">Complete</span>' : l.started ? '<span class="status s-prog">In progress</span>' : '<span class="status s-new">Not started</span>';
+}
+function cardHTML(l) {
+  const note = [l.ticket, l.remarks].filter(Boolean).join(" · ");
+  return `<article class="card${l.complete ? " complete" : ""}" aria-label="Laptop ${esc(l.tag)}">
+    <div class="card-head">
+      <div style="min-width:0"><div class="card-tag">${esc(l.tag)}</div><div class="card-loc">${esc(l.region)} · ${esc(l.hub)}</div></div>
+      ${statusPill(l)}
+    </div>
+    <dl class="card-meta">
+      <dt>User</dt><dd title="${esc(l.assigned)}">${esc(short(l.assigned)) || "—"}</dd>
+      ${l.latestUser ? `<dt>Latest</dt><dd title="${esc(l.latestUser)}">${esc(short(l.latestUser).replace(/\s+/g, " "))}</dd>` : ""}
+      <dt>Laptop</dt><dd>${esc([l.brand, l.model].filter(Boolean).join(" ")) || "—"}</dd>
+      <dt>Serial</dt><dd class="mono" title="${esc(l.serial)}">${esc(l.serial) || "—"}</dd>
+    </dl>
+    <div class="checks" role="group" aria-label="Checklist for ${esc(l.tag)}">${STEPS.map(s => stepBtn(l, s)).join("")}</div>
+    <div class="card-foot">
+      <div class="card-prog"><span>${l.doneN} of ${l.need} done</span>${barHTML(l.doneN, 0, l.need || 1)}</div>
+      ${note ? `<div class="card-note">${esc(note)}</div>` : ""}
+      <div class="card-actions"><span>${l.at ? `Updated by ${esc(short(l.by))}, ${esc(fmtTime(l.at))}` : "No changes yet"}</span><button type="button" class="link-btn" data-open="${esc(l.tag)}">Details &amp; notes →</button></div>
+    </div>
+  </article>`;
 }
 function fillSelect(sel, values, cur, allLabel) {
   sel.innerHTML = `<option value="">${allLabel}</option>` + values.map(v => `<option${v === cur ? " selected" : ""}>${esc(v)}</option>`).join("");
 }
 function renderList() {
-  const regions = [...new Set(LAPTOPS.map(l => l.region))].sort();
-  const hubs = [...new Set(LAPTOPS.filter(l => !F.region || l.region === F.region).map(l => l.hub))].sort();
+  const regions = [...new Set(LAPTOPS.map(l => l.region))].sort(byText);
+  const hubs = [...new Set(LAPTOPS.filter(l => !F.region || l.region === F.region).map(l => l.hub))].sort(byText);
   if (F.hub && !hubs.includes(F.hub)) F.hub = "";
   fillSelect($("#f-region"), regions, F.region, "All regions");
   fillSelect($("#f-hub"), hubs, F.hub, "All hubs");
+  $("#f-sort").value = F.sort;
   if ($("#q").value !== F.q) $("#q").value = F.q;
   document.querySelectorAll("[data-show]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.show === F.show)));
   $("#btn-upload").hidden = !IS_ADMIN;
@@ -320,17 +391,7 @@ function renderList() {
   const rows = filtered();
   $("#count").textContent = `Showing ${rows.length} of ${LAPTOPS.length} laptops`;
   if (!rows.length) { list.innerHTML = `<div class="panel empty"><h2>No laptops match</h2><p>Try "All" or clear the search and filters.</p></div>`; return; }
-  list.innerHTML = `<div class="tablewrap"><table>
-    <thead><tr><th>Tag / Serial</th><th>Region · Hub</th><th>User</th><th>Laptop</th>${STEPS.map(s => `<th class="step">${esc(s.short)}</th>`).join("")}<th>Remarks</th><th>Last change</th></tr></thead>
-    <tbody>${rows.map(l => `<tr data-open="${esc(l.tag)}" class="${l.complete ? "complete" : ""}">
-      <td><div class="mono"><b>${esc(l.tag)}</b></div><div class="sub mono">${esc(l.serial)}</div></td>
-      <td>${esc(l.region)}<div class="sub">${esc(l.hub)}</div></td>
-      <td><div style="overflow-wrap:anywhere">${esc(short(l.assigned)) || "—"}</div>${l.latestUser ? `<div class="sub">Latest: ${esc(short(l.latestUser))}</div>` : ""}</td>
-      <td>${esc(l.brand) || "—"}<div class="sub">${esc(l.model)}</div></td>
-      ${STEPS.map(s => `<td class="step">${chip(l, s)}</td>`).join("")}
-      <td><div class="cell-rem">${esc([l.ticket, l.remarks].filter(Boolean).join(" · "))}</div></td>
-      <td class="sub">${l.at ? `${esc(short(l.by))}<br>${esc(fmtTime(l.at))}` : ""}</td>
-    </tr>`).join("")}</tbody></table></div>`;
+  list.innerHTML = `<div class="cards">${rows.map(cardHTML).join("")}</div>`;
 }
 
 // ---------- detail drawer ----------
@@ -373,7 +434,7 @@ function openDetail(tag) {
   };
 }
 function lastLine(l) { return l.at ? `Last change by ${esc(short(l.by))}, ${esc(fmtTime(l.at))}` : "No changes on the web yet"; }
-function stepsHTML(l) { return STEPS.map(s => `<div class="srow"><span>${esc(s.label)}</span>${chip(l, s)}</div>`).join(""); }
+function stepsHTML(l) { return STEPS.map(s => stepBtn(l, s)).join(""); }
 $("#dlg").addEventListener("close", () => { openTag = null; });
 $("#dlg").addEventListener("click", e => { if (e.target.id === "dlg") e.target.close(); });
 function refreshDetail() {
@@ -395,7 +456,7 @@ async function saveEdit(tag, changes) {
   catch (e) { EDITS[tag] = prev; rerender(); toast("Couldn't save. Check your connection and try again."); return false; }
 }
 document.addEventListener("click", e => {
-  const c = e.target.closest(".chip[data-k]");
+  const c = e.target.closest(".step-btn[data-k]");
   if (c) {
     e.stopPropagation(); e.preventDefault();
     if (c.disabled) return;
@@ -403,7 +464,7 @@ document.addEventListener("click", e => {
     saveEdit(l.tag, { steps: { [c.dataset.k]: NEXT[l.steps[c.dataset.k]] } });
     return;
   }
-  const r = e.target.closest("tr[data-open]");
+  const r = e.target.closest("[data-open]");
   if (r) openDetail(r.dataset.open);
 });
 
@@ -487,6 +548,8 @@ document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => go(b.data
 $("#q").oninput = e => { F.q = e.target.value; renderList(); };
 $("#f-region").onchange = e => { F.region = e.target.value; F.hub = ""; renderList(); };
 $("#f-hub").onchange = e => { F.hub = e.target.value; renderList(); };
+$("#f-sort").onchange = e => { F.sort = e.target.value; try { localStorage.setItem("lm-sort", F.sort); } catch (err) {} renderList(); };
+try { const v = localStorage.getItem("lm-sort"); if (v && v in SORTS) F.sort = v; } catch (e) {}
 document.querySelectorAll("[data-show]").forEach(b => b.onclick = () => { F.show = b.dataset.show; renderList(); });
 
 function rerender() {

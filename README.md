@@ -10,10 +10,16 @@ A shared web checklist for the Last Mile laptops: Windows 11 update, returns, re
 - **Progress by region:** the least finished regions are listed first. Click a region to open its laptops.
 
 **Checklist tab**
-- Each laptop has 5 steps: **Return to IT → Done return → Replacement to hub → Win 11 updated → Snipe-IT updated**.
-- Click a step to change it: **Pending → Done → N/A (not needed) → Pending**. It saves straight away.
-- Click a laptop row to open its details. There you can edit **Latest user**, **Remarks** and the **Replacement laptop** fields (new serial, new tag, ISD ticket, TN), then press **Save changes**.
-- **Search** looks across tag, serial, users, hub and ticket. You can also filter by **region** and **hub**, and switch between **Not complete / Complete / All**.
+- Each laptop is its own card, showing:
+  - a status badge: **Not started**, **In progress** or **Complete**;
+  - its user, laptop and serial;
+  - tick boxes for the 5 steps: **Return to IT → Done return → Replacement to hub → Win 11 updated → Snipe-IT updated**.
+- Click a tick box to change it: **empty (Pending) → ✓ (Done) → dashed – (Not needed) → empty**. It saves straight away.
+- Steps marked "Not needed" don't count against progress, so "1 of 4 done" means one step is not needed.
+- Click **Details & notes →** on a card to edit **Latest user**, **Remarks** and the **Replacement laptop** fields (new serial, new tag, ISD ticket, TN). Then press **Save changes**.
+- **Search** looks across tag, serial, users, hub and ticket.
+- You can also filter by **region** and **hub**, and switch between **Not complete / Complete / All**.
+- **Sort by** offers: region then hub, hub, least done first, most done first, tag number, or recently changed. Each person's sort choice is remembered.
 - **Download Excel** saves the current view, including who made the last change and when.
 
 ## How the Excel was loaded
