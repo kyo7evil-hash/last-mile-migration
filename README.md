@@ -20,6 +20,8 @@ A shared web checklist for the Last Mile laptops: Windows 11 update, returns, re
 - **Search** looks across tag, serial, users, hub and ticket.
 - You can also filter by **region** and **hub**, and switch between **Not complete / Complete / All**.
 - **Sort by** offers: region then hub, hub, least done first, most done first, tag number, or recently changed. Each person's sort choice is remembered.
+- **+ Add laptop** adds a new card for a laptop that isn't in the Excel. Only the tag number is required; region, hub, user, serial, brand, model, latest user and remarks are optional. All steps start as Pending, and the card shows **Added on web**.
+- **Remove laptop** (in **Details & notes**) is only available for cards added on the web. Click it twice to confirm. Laptops from the Excel can't be removed.
 - **Download Excel** saves the current view, including who made the last change and when.
 
 ## How the Excel was loaded

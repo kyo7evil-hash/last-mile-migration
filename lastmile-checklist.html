@@ -118,6 +118,9 @@ nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: 
 .card-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-2) }
 .link-btn { border: 0; background: none; color: var(--focus); font-weight: 600; cursor: pointer; padding: 4px 0; font-size: 12.5px }
 .link-btn:hover { text-decoration: underline }
+.added-tag { color: var(--focus); font-weight: 600 }
+.btn.danger { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)) }
+.err { font-size: 12.5px; color: var(--accent); font-weight: 600 }
 
 /* tick-box step rows (cards + detail panel) */
 .step-btn { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: 0; border-radius: 6px; padding: 5px 6px; cursor: pointer; font-size: 13.5px }
@@ -204,6 +207,7 @@ dl.kv dd { margin: 0; overflow-wrap: anywhere; white-space: pre-line }
         </div>
         <span id="active-filters" hidden></span>
         <span class="spacer"></span>
+        <button class="btn primary" id="btn-add" type="button" hidden>+ Add laptop</button>
         <button class="btn" id="btn-export">Download Excel</button>
         <button class="btn" id="btn-upload" hidden>Upload workbook</button>
         <input type="file" id="file" accept=".xlsx,.xls" hidden>
@@ -241,8 +245,19 @@ const short = e => (e || "").replace(/@.*$/, "");
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2600); }
 
 // ---------- merge base + edits ----------
+const ADD_FIELDS = ["region", "hub", "assigned", "serial", "brand", "model", "position"];
+function addedRows() {
+  // Laptops added on the web live only in edits/<tag> as { added: {...} }; a workbook row with the same tag wins.
+  const inBase = new Set(BASE.rows.map(r => r.tag));
+  return Object.entries(EDITS).filter(([t, e]) => e.added && !inBase.has(t)).map(([tag, e]) => ({
+    tag, region: e.added.region || "No region", hub: e.added.hub || "No hub", assigned: e.added.assigned || "", serial: e.added.serial || "",
+    brand: e.added.brand || "", model: e.added.model || "", position: e.added.position || "", snipeStatus: "", lastSync: "", dept: "",
+    latestUser: "", remarks: "", newSerial: "", newTag: "", ticket: "", tn: "", isAdded: true, addedBy: e.added.by || "",
+    steps: Object.fromEntries(STEPS.map(s => [s.key, "pending"])),
+  }));
+}
 function merge() {
-  LAPTOPS = BASE.rows.map(b => {
+  LAPTOPS = [...BASE.rows, ...addedRows()].map(b => {
     const e = EDITS[b.tag] || {};
     const l = { ...b, steps: { ...b.steps, ...(e.steps || {}) }, by: e.by, at: e.at };
     for (const k of EDIT_FIELDS) if (k in e) l[k] = e[k];
@@ -348,7 +363,7 @@ function cardHTML(l) {
   const note = [l.ticket, l.remarks].filter(Boolean).join(" · ");
   return `<article class="card${l.complete ? " complete" : ""}" aria-label="Laptop ${esc(l.tag)}">
     <div class="card-head">
-      <div style="min-width:0"><div class="card-tag">${esc(l.tag)}</div><div class="card-loc">${esc(l.region)} · ${esc(l.hub)}</div></div>
+      <div style="min-width:0"><div class="card-tag">${esc(l.tag)}</div><div class="card-loc">${esc(l.region)} · ${esc(l.hub)}${l.isAdded ? ' · <span class="added-tag">Added on web</span>' : ""}</div></div>
       ${statusPill(l)}
     </div>
     <dl class="card-meta">
@@ -378,6 +393,7 @@ function renderList() {
   if ($("#q").value !== F.q) $("#q").value = F.q;
   document.querySelectorAll("[data-show]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.show === F.show)));
   $("#btn-upload").hidden = !IS_ADMIN;
+  $("#btn-add").hidden = !CAN_WRITE;
 
   const af = $("#active-filters");
   const stepName = F.step && STEPS.find(s => s.key === F.step).label;
@@ -419,11 +435,18 @@ function openDetail(tag) {
         ${inp("newSerial", "New serial no.")}${inp("newTag", "New tag no.")}${inp("ticket", "ISD ticket")}${inp("tn", "TN (tracking no.)")}
       </div></div>
     </div>
-    <div class="dlg-foot">${CAN_WRITE ? '<button class="btn primary" id="dlg-save" type="submit" value="save">Save changes</button>' : '<span class="muted">View only</span>'}<button class="btn" type="button" id="dlg-cancel">Close</button></div>
+    <div class="dlg-foot">${CAN_WRITE ? '<button class="btn primary" id="dlg-save" type="submit" value="save">Save changes</button>' : '<span class="muted">View only</span>'}<button class="btn" type="button" id="dlg-cancel">Close</button>
+      ${CAN_WRITE && l.isAdded ? '<span class="spacer"></span><button class="btn danger" type="button" id="dlg-remove">Remove laptop</button>' : ""}</div>
   </form>`;
   const d = $("#dlg");
   d.showModal();
   $("#dlg-x").onclick = $("#dlg-cancel").onclick = () => d.close();
+  const rm = $("#dlg-remove");
+  if (rm) rm.onclick = async () => {
+    if (!rm.dataset.armed) { rm.dataset.armed = "1"; rm.textContent = "Click again to remove"; return; }
+    try { await DB.collection("edits").doc(tag).delete(); delete EDITS[tag]; d.close(); rerender(); toast("Removed " + tag); }
+    catch (e) { toast("Couldn't remove it. Check your connection and try again."); }
+  };
   $("#dlg-form").onsubmit = async ev => {
     ev.preventDefault();
     const changes = {};
@@ -432,6 +455,56 @@ function openDetail(tag) {
     if (await saveEdit(tag, changes)) { toast("Saved " + tag); d.close(); }
   };
 }
+// ---------- add laptop ----------
+function openAdd() {
+  if (!CAN_WRITE) { toast("Sign in to add laptops."); return; }
+  openTag = null;
+  const opts = k => [...new Set(LAPTOPS.map(l => l[k]).filter(v => v && !/^No (region|hub)$/.test(v)))].sort(byText).map(v => `<option value="${esc(v)}">`).join("");
+  const f = (k, label, extra = "") => `<label${/full/.test(extra) ? ' class="full"' : ""}>${label}<input id="add-${k}" ${extra.replace("full", "")}></label>`;
+  $("#dlg").innerHTML = `<form class="dlg" id="add-form" novalidate>
+    <div class="dlg-head"><div><div class="eyebrow">New card</div><h2 id="dlg-title" style="font-size:18px">Add a laptop</h2><div class="sub">All steps start as Pending. Only the tag number is required.</div></div><button type="button" class="x" id="dlg-x" aria-label="Close">×</button></div>
+    <div class="dlg-body">
+      <div class="form">
+        ${f("tag", "Tag number *", 'full placeholder="e.g. NV00031234" autocomplete="off" required')}
+        <div class="full err" id="add-err" role="alert" hidden></div>
+        ${f("region", "Region", 'list="dl-region" placeholder="e.g. Zone D"')}${f("hub", "Hub", 'list="dl-hub" placeholder="e.g. Segambut"')}
+        ${f("assigned", "User (Snipe-IT email)", 'full type="email" placeholder="name@ninjavan.co"')}
+        ${f("serial", "Serial number")}${f("brand", "Brand", 'list="dl-brand" placeholder="e.g. DELL"')}
+        ${f("model", "Model")}${f("position", "Position")}
+        ${f("latestUser", "Latest user", "full")}
+        <label class="full">Remarks<textarea id="add-remarks"></textarea></label>
+      </div>
+      <datalist id="dl-region">${opts("region")}</datalist><datalist id="dl-hub">${opts("hub")}</datalist><datalist id="dl-brand">${opts("brand")}</datalist>
+    </div>
+    <div class="dlg-foot"><button class="btn primary" type="submit">Add laptop</button><button class="btn" type="button" id="dlg-cancel">Cancel</button></div>
+  </form>`;
+  const d = $("#dlg");
+  d.showModal();
+  $("#add-tag").focus();
+  $("#dlg-x").onclick = $("#dlg-cancel").onclick = () => d.close();
+  $("#add-form").onsubmit = async ev => {
+    ev.preventDefault();
+    const err = msg => { const e = $("#add-err"); e.textContent = msg; e.hidden = !msg; if (msg) $("#add-tag").focus(); };
+    const tag = $("#add-tag").value.trim().toUpperCase().replace(/\s+/g, "");
+    if (!tag) return err("Enter the laptop's tag number.");
+    if (!/^[A-Z0-9_\-.~:@+]{1,150}$/i.test(tag)) return err("Tag numbers can only use letters, numbers and - _ . characters.");
+    if (LAPTOPS.some(l => l.tag.toUpperCase() === tag)) return err(`${tag} is already on the checklist. Search for it instead.`);
+    const added = Object.fromEntries(ADD_FIELDS.map(k => [k, $("#add-" + k).value.trim()]));
+    added.by = ME || ""; added.at = new Date().toISOString();
+    const changes = { added };
+    const lu = $("#add-latestUser").value.trim(), rem = $("#add-remarks").value.trim();
+    if (lu) changes.latestUser = lu;
+    if (rem) changes.remarks = rem;
+    if (await saveEdit(tag, changes)) {
+      d.close();
+      Object.assign(F, { q: tag, region: "", hub: "", step: "", show: "all" });
+      go("list");
+      toast("Added " + tag);
+    }
+  };
+}
+$("#btn-add").onclick = openAdd;
+
 function lastLine(l) { return l.at ? `Last change by ${esc(short(l.by))}, ${esc(fmtTime(l.at))}` : "No changes on the web yet"; }
 function stepsHTML(l) { return STEPS.map(s => stepBtn(l, s)).join(""); }
 $("#dlg").addEventListener("close", () => { openTag = null; });

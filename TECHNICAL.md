@@ -70,7 +70,7 @@ Defined in `V1__docs.sql` and applied by Flyway on deploy. The application never
 |---|---|---|---|
 | `base` | `meta` | `{ chunks, count, file, by, at }` describes the last workbook upload | Admins only |
 | `base` | `p0` … `pN` | `{ rows: [Laptop, …] }`, holding up to 150 laptops per chunk | Admins only |
-| `edits` | asset tag, e.g. `NV00029544` | Changes made on the web for that laptop | Any signed-in user |
+| `edits` | asset tag, e.g. `NV00029544` | Changes made on the web for that laptop. For laptops added on the web, it also holds `added: { region, hub, assigned, serial, brand, model, position, by, at }`. | Any signed-in user |
 
 **Laptop record** (in `base`, parsed from the workbook):
 
@@ -113,6 +113,7 @@ The page shows `effective = base` with `edits[tag]` laid on top.
 - Steps are combined key by key.
 - The edited text fields (`latestUser`, `remarks`, `newSerial`, `newTag`, `ticket`, `tn`) replace the base values when they are present.
 - Re-uploading a workbook replaces `base`. **Edits made on the web always win over workbook values.**
+- **Laptops added on the web** (`edits/<tag>` with an `added` object) are appended to the list, with all steps Pending. If a later workbook contains the same tag, the workbook row is used instead, and the web edits still apply on top. Removing an added laptop deletes its `edits/<tag>` document.
 
 ---
 
@@ -196,6 +197,7 @@ The full spec is in `openapi.json`. All `/api/docs` routes require a signed-in u
 | **Detail panel** | A `<dialog>` with the steps, read-only laptop facts, and editable Latest user, Remarks and replacement fields. **Save changes** writes only the fields that changed. |
 | **Filters** | Search (tag, serial, users, hub, region, brand, model, remarks, ticket, new serial or tag, TN), region, hub, a "waiting on step" filter (set from the Summary tab), and Not complete / Complete / All |
 | **Sort** | Region then hub (default), hub, least done first, most done first, tag, or recently changed |
+| **Add / remove laptops** | **+ Add laptop** (any signed-in user) opens a form. The tag is required, upper-cased, must be unique and must be a valid document ID. Region, hub and brand suggest existing values. Saved via `saveEdit(tag, { added, latestUser?, remarks? })`. **Remove laptop** appears only for added laptops and needs two clicks. |
 | **Export** | **Download Excel** writes the current filtered view to `last-mile-checklist-YYYY-MM-DD.xlsx` |
 | **Theme** | Light and dark colour sets defined as CSS variables. It follows the system setting by default. The **Day / Night mode** button overrides it. |
 | **Saved in each browser (localStorage)** | `lm-tab` (last tab), `lm-sort` (sort order), `lm-theme` (light or dark). Nothing shared is kept in browser storage. |
@@ -294,4 +296,5 @@ The app is **GitHub-connected**, so Substrait builds the pushed `main` branch, n
 | 6 Oct 2026 | Added the Day / Night mode switch. |
 | 6 Oct 2026 | Checklist tab redesigned: a card per laptop with tick boxes, status badges, progress per card, sort options, and a tidier filter bar. |
 | 6 Oct 2026 | Added this technical document. |
+| 6 Oct 2026 | Added **+ Add laptop** (new cards) and **Remove laptop** for web-added cards. |
 | 6 Oct 2026 | Removed the "Done return" step; the checklist now has 4 steps. Saved Done return values remain in the database but are ignored. |
