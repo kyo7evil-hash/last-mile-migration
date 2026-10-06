@@ -21,3 +21,6 @@ dist/
 
 # Local Claude Code / test settings
 .claude/
+
+# Word export of TECHNICAL.md (regenerated from the Markdown)
+*.docx

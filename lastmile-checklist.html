@@ -221,7 +221,6 @@ dl.kv dd { margin: 0; overflow-wrap: anywhere; white-space: pre-line }
 "use strict";
 const STEPS = [
   { key: "ret",     label: "Return to IT",       short: "Return to IT" },
-  { key: "doneRet", label: "Done return",        short: "Returned" },
   { key: "repl",    label: "Replacement to hub", short: "Replacement" },
   { key: "win11",   label: "Win 11 updated",     short: "Win 11" },
   { key: "snipe",   label: "Snipe-IT updated",   short: "Snipe-IT" },
@@ -281,7 +280,7 @@ function renderSummary() {
       <div class="big">${c}<small> / ${n}</small></div>
       <div>
         <h2>laptops complete (${pct}%)</h2>
-        <div class="hint">A laptop is complete when all 5 steps are Done or N/A. ${started} more are in progress, ${n - c - started} not started.</div>
+        <div class="hint">A laptop is complete when all ${STEPS.length} steps are Done or N/A. ${started} more are in progress, ${n - c - started} not started.</div>
         ${barHTML(c, 0, n)}
       </div>
     </div>
@@ -477,7 +476,7 @@ function parseWorkbook(wb) {
   const sheets = wb.SheetNames.map(n => XLSX.utils.sheet_to_json(wb.Sheets[n], { defval: "", raw: false }).map(normRow));
   const main = sheets.find(r => r.length && "tagging" in r[0] && "win 11 update" in r[0]);
   if (!main) throw new Error("Couldn't find the laptop sheet. It needs the columns Tagging and Win 11 update.");
-  const lm = sheets.find(r => r.length && "done return" in r[0]) || [];
+  const lm = sheets.find(r => r.length && ("tn" in r[0] || "done return" in r[0]) && !("win 11 update" in r[0])) || [];
   const lmByTag = new Map(lm.filter(r => r.tagging).map(r => [r.tagging, r]));
   const seen = new Set(), rows = [];
   for (const r of main) {
@@ -493,7 +492,6 @@ function parseWorkbook(wb) {
       newSerial: x["serial no."] || "", newTag: x["tagging no."] || "", ticket: x.ticket || "", tn: x.tn || "",
       steps: {
         ret: flag(r["return to it"]),
-        doneRet: flag(x["done return"]),
         repl: /no need replacement/i.test(r.remarks) ? "na" : flag(r["replacement to hub"]),
         win11: flag(r["win 11 update"]),
         snipe: "pending",

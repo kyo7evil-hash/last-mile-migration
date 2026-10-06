@@ -5,7 +5,7 @@ A shared web checklist for the Last Mile laptops: Windows 11 update, returns, re
 ## Using the page
 
 **Summary tab (main screen)**
-- **Laptops complete:** a laptop counts as complete when all 5 steps are Done or N/A.
+- **Laptops complete:** a laptop counts as complete when all 4 steps are Done or N/A.
 - **Progress by step:** click a step to see the laptops still waiting on it.
 - **Progress by region:** the least finished regions are listed first. Click a region to open its laptops.
 
@@ -13,9 +13,9 @@ A shared web checklist for the Last Mile laptops: Windows 11 update, returns, re
 - Each laptop is its own card, showing:
   - a status badge: **Not started**, **In progress** or **Complete**;
   - its user, laptop and serial;
-  - tick boxes for the 5 steps: **Return to IT → Done return → Replacement to hub → Win 11 updated → Snipe-IT updated**.
+  - tick boxes for the 4 steps: **Return to IT → Replacement to hub → Win 11 updated → Snipe-IT updated**.
 - Click a tick box to change it: **empty (Pending) → ✓ (Done) → dashed – (Not needed) → empty**. It saves straight away.
-- Steps marked "Not needed" don't count against progress, so "1 of 4 done" means one step is not needed.
+- Steps marked "Not needed" don't count against progress, so "1 of 3 done" means one step is not needed.
 - Click **Details & notes →** on a card to edit **Latest user**, **Remarks** and the **Replacement laptop** fields (new serial, new tag, ISD ticket, TN). Then press **Save changes**.
 - **Search** looks across tag, serial, users, hub and ticket.
 - You can also filter by **region** and **hub**, and switch between **Not complete / Complete / All**.
@@ -26,7 +26,7 @@ A shared web checklist for the Last Mile laptops: Windows 11 update, returns, re
 
 The data comes from `Last Mile windows 11 migration.xlsx`:
 - **Sheet1** is the laptop list.
-- **LM** holds the replacement details and Done Return, matched to Sheet1 by tag.
+- **LM** holds the replacement details, matched to Sheet1 by tag.
 
 | Excel | Becomes |
 |---|---|
